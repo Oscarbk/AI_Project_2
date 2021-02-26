@@ -19,6 +19,7 @@ class V {
     int color;
     int mrv;
     int edges;
+    HashSet<Integer> domain;
     V ptr;
     public V(String vertex, int color)
     {
@@ -29,6 +30,24 @@ class V {
     public String getID() {
         return this.vertex;
     }
+    public void setDomain(int colors)
+    {
+        domain = new HashSet<>();
+        for (int i = 0; i < colors; i++)
+        {
+            domain.add(i);
+        }
+    }
+}
+class arc {
+    String x;
+    String y;
+    public arc (String x, String y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+
 }
 
 public class CSP {
@@ -107,14 +126,37 @@ public class CSP {
         V start = g.vertexSet().stream().filter(V -> V.getID().equals("0")).findAny().orElse(null);
         Iterator<V> iterator = new DepthFirstIterator<>(g, start);
         ArrayList<V> set = new ArrayList<>();
-        while (iterator.hasNext()) {
+        ArrayList<arc> arcs = new ArrayList<>();
+        while (iterator.hasNext())
+        {
             V v = iterator.next();
             set.add(v);
+
+            // Set domain of each vertex
+            v.setDomain(colors);
+
+            // Construct arcs
+            List<V> neighbors = Graphs.neighborListOf(g, v);
+            for (V neighbor : neighbors)
+            {
+                arc arc1 = new arc(v.getID(), neighbor.getID());
+                //arc arc2 = new arc(neighbor.getID(), v.getID());
+                arcs.add(arc1);
+                //arcs.add(arc2);
+            }
+            //System.out.println("Domain of " + v.getID() + ": " + v.domain.toString());
         }
-        /*for (int i = 0; i < set.size(); i++)
+        Queue<arc> agenda = new ArrayDeque<>();
+        for (int i = 0; i < arcs.size(); i++)
         {
-            System.out.print(set.get(i).getID() + " ");
-        }*/
+            agenda.add(arcs.get(i));
+        }
+
+        // Begin pruning graph based on arc rules
+        while (!agenda.isEmpty())
+        {
+
+        }
         System.out.println();
         System.out.println("result: " + Util(g, set, colors, coloring, 0));
 
