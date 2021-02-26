@@ -32,6 +32,7 @@ class V {
 }
 
 public class CSP {
+    int vertices = 7;
     public static void main(String[] args) throws IOException
     {
         Graph<V, DefaultEdge> g = new DefaultUndirectedGraph<>(DefaultEdge.class);
@@ -110,10 +111,10 @@ public class CSP {
             V v = iterator.next();
             set.add(v);
         }
-        for (int i = 0; i < set.size(); i++)
+        /*for (int i = 0; i < set.size(); i++)
         {
             System.out.print(set.get(i).getID() + " ");
-        }
+        }*/
         System.out.println();
         System.out.println("result: " + Util(g, set, colors, coloring, 0));
 
@@ -145,12 +146,45 @@ public class CSP {
         }*/
 
     }
+
+    // TODO: Verify sample sets can be solved with given coloring (See set 4)
     public static boolean Util(Graph<V, DefaultEdge> g, ArrayList<V> set, int colors, HashMap<String, Integer> coloring, int i)
     {
-        if (i == set.size()) return true;
+        /*if (i == set.size())
+        {
+            System.out.println("reached max size");
+            return true;
+        }*/
+        if (set.isEmpty())
+        {
+            System.out.println("Set empty");
+            return true;
+        }
+        //V currentVertex = set.get(i);
 
-        V currentVertex = set.get(i);
-       // System.out.println("Got vertex: " + currentVertex.getID());
+        /*System.out.println("vertices and mrv:");
+        V start = g.vertexSet().stream().filter(V -> V.getID().equals("0")).findAny().orElse(null);
+        Iterator<V> iterator = new DepthFirstIterator<>(g, start);
+        while (iterator.hasNext()) {
+            V v = iterator.next();
+            System.out.println("vertex " + v.getID() + " has mrv of " + v.mrv);
+        }*/
+
+        // Find vertex with mrv
+        V currentVertex;
+        int index = -1;
+        int mrv = colors + 10;
+        for (int it = 0; it < set.size(); it++)
+        {
+            if (set.get(it).mrv < mrv)
+            {
+                mrv = set.get(it).mrv;
+                index = it;
+            }
+        }
+        currentVertex = set.remove(index);
+
+        //System.out.println("Got vertex: " + currentVertex.getID());
         for (int c = 0; c < colors; c++)
         {
             currentVertex.color = c;
@@ -158,7 +192,7 @@ public class CSP {
             {
                 //System.out.println("Checking if vertex " + currentVertex.getID() + " can be assigned color " + c);
                 coloring.put(currentVertex.getID(), c);
-
+                updateMRV(g, currentVertex);
                 if (Util(g, set, colors, coloring, i + 1))
                 {
 
