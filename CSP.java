@@ -1,15 +1,10 @@
 import org.jgrapht.Graph;
 import org.jgrapht.Graphs;
-import org.jgrapht.alg.color.GreedyColoring;
-import org.jgrapht.alg.interfaces.VertexColoringAlgorithm;
 import org.jgrapht.graph.*;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 import java.io.*;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /*
 * Write a CSP algorithm to solve this coloring problem.
@@ -20,61 +15,30 @@ import java.util.Set;
 * */
 class V {
     String vertex;
-    int color = -1;
+    int color;
     public V(String vertex, int color)
     {
         this.vertex = vertex;
         this.color = color;
     }
-    public String getName() {
+    public String getID() {
         return this.vertex;
     }
 }
-class URI {
-    String url;
-    public URI(String url)
-    {
-        this.url = url;
-    }
-    public String getHost()
-    {
-        return this.url;
-    }
 
-
-}
 public class CSP {
     public static void main(String[] args) throws IOException
     {
-       /* Graph<V, DefaultEdge> g = new DefaultUndirectedGraph<>(DefaultEdge.class);;
+        Graph<V, DefaultEdge> g = new DefaultUndirectedGraph<>(DefaultEdge.class);
+
         int colors = getGraph(g);
-        getColoring(g, colors);*/
+        HashMap<String, Integer> coloring = new HashMap<>();
 
-
-
-        Graph<URI, DefaultEdge> g = new DefaultUndirectedGraph<>(DefaultEdge.class);
-
-        getGraph2(g);
-
-        URI start = g
-                .vertexSet().stream().filter(uri -> uri.getHost().equals("0")).findAny()
-                .get();
-
-        /*Iterator<URI> iterator = new DepthFirstIterator<>(g, start);
-        while (iterator.hasNext()) {
-            URI uri = iterator.next();
-            System.out.println(uri.getHost());
-        }*/
-        URI test = g.vertexSet().stream().filter(V -> V.getHost().equals("0")).findAny().get();
-        List<URI> testprint = Graphs.neighborListOf(g, test);
-        System.out.println("Size: " + testprint.size());
-        for (URI s : testprint) {
-            System.out.println(s.getHost());
-        }
-
+        getColoring(g, colors, coloring);
     }
-    public static int getGraph2(Graph<URI, DefaultEdge> g) throws IOException {
-        int colors = 0;
+    public static int getGraph(Graph<V, DefaultEdge> g) throws IOException
+    {
+        int colors = -1;
 
         String test = "gc_basic.txt";
         File file = new File(test);
@@ -82,7 +46,6 @@ public class CSP {
         BufferedReader in = new BufferedReader(new FileReader(file));
 
         String line;
-        String edgePtr;
 
         // Get to the point in the .txt file where color is defined
         while ((line = in.readLine()) != null) {
@@ -92,124 +55,111 @@ public class CSP {
             }
             if ((line.contains("# Graph:"))) break;
         }
+
         HashSet<String> vertices = new HashSet<>();
         while ((line = in.readLine()) != null) {
             if (line.equals("")) break;
             String[] tokens = line.split(",");
 
-            URI v1, v2;
+            V v1, v2;
+            // Check if vertex is already in the graph
             if (!vertices.contains(tokens[0]))
             {
-                System.out.println("Adding vertex: " + tokens[0]);
-                v1 = new URI(tokens[0]);
+                v1 = new V(tokens[0], -1);
                 g.addVertex(v1);
                 vertices.add(tokens[0]);
             }
-            else
+            else    // Get the vertex which already exists
             {
-                v1 = g
-                        .vertexSet().stream().filter(uri -> uri.getHost().equals(tokens[0])).findAny()
-                        .get();
+                v1 = g.vertexSet().stream().filter(uri -> uri.getID().equals(tokens[0])).findAny().orElse(null);
             }
             if (!vertices.contains(tokens[1]))
             {
-                System.out.println("Adding vertex: " + tokens[1]);
-                v2 = new URI(tokens[1]);
+                v2 = new V(tokens[1], -1);
                 g.addVertex(v2);
                 vertices.add(tokens[1]);
             }
             else
             {
-                v2 = g
-                        .vertexSet().stream().filter(uri -> uri.getHost().equals(tokens[1])).findAny()
-                        .get();
+                v2 = g.vertexSet().stream().filter(uri -> uri.getID().equals(tokens[1])).findAny().orElse(null);
             }
+
+            // Always a new edge to add
             g.addEdge(v1, v2);
         }
         return colors;
     }
 
-    public static void getColoring(Graph<V, DefaultEdge> g, int colors)
+    public static void getColoring(Graph<V, DefaultEdge> g, int colors, HashMap<String, Integer> coloring)
     {
-        /*System.out.println(g.toString());
-        GreedyColoring<String, DefaultEdge> CSP = new GreedyColoring<>(g);
-        System.out.println(CSP.getColoring().toString());*/
-        //System.out.println(colors);
-
-        //System.out.println(Graphs.neighborListOf(g, "0"));
-        /*List<V> test = Graphs.neighborListOf(g, new V(0, -1));
-        for (V s : test)
-        {
-            System.out.println(s.vertex);
-        }*/
-
-        V test = g.vertexSet().stream().filter(V -> V.getName().equals("0")).findAny().get();
-        List<V> testprint = Graphs.neighborListOf(g, test);
-        System.out.println(test.color);
-        System.out.println("Size: " + testprint.size());
-        for (V s : testprint) {
-            System.out.println(s.vertex);
+        V start = g.vertexSet().stream().filter(V -> V.getID().equals("0")).findAny().orElse(null);
+        //System.out.println("null?" + start);
+        Iterator<V> iterator = new DepthFirstIterator<>(g, start);
+        Stack<V> stack = new Stack<>();
+        while (iterator.hasNext()) {
+            V v = iterator.next();
+            stack.push(v);
         }
+        V lastVertex = stack.lastElement();
 
-    }
-    public static int getGraph(Graph<V, DefaultEdge> g) throws IOException
-    {
-        int colors = 0;
-
-        String test = "gc_basic.txt";
-        File file = new File(test);
-        System.out.println(test);
-        BufferedReader in = new BufferedReader(new FileReader(file));
-
-        String line;
-
-        // Get to the point in the .txt file where color is defined
-        while ((line = in.readLine()) != null)
+        while (!stack.isEmpty())
         {
-            if (line.contains("colors = "))
+            V currentVertex = stack.pop();
+
+            // Return true if all vertices have been assigned a color
+            if ((currentVertex.getID().equals(lastVertex.getID())) && (currentVertex.color != -1))
             {
-                String[] tokens = line.split(" ");
-                colors = Integer.parseInt(tokens[2]);
+                System.out.println("We ever get here?");
+                return;
             }
-            if ((line.contains("# Graph:"))) break;
+            for (int i = 0; i < colors; i++)
+            {
+                currentVertex.color = i;
+                if (verifyColor(g, currentVertex))
+                {
+                    coloring.put(currentVertex.getID(), i);
+                    break;
+                }
+                else
+                {
+                    //System.out.println("Trying next color");
+                    // Try the next color
+                    currentVertex.color = -1;
+                }
+            }
         }
-        while ((line = in.readLine()) != null)
+        int max = -1;
+        for (Integer color : coloring.values())
         {
-            if (line.equals("")) break;
-            String[] tokens = line.split(",");
-
-            V v1 = new V(tokens[0], -1);
-            V v2 = new V(tokens[1], -1);
-            g.addVertex(v1);
-            g.addVertex(v2);
-            //System.out.println("Trying to add edge between: " + tokens[0] + " " + tokens[1]);
-            if (g.addEdge(v1, v2) == null) System.out.println("Could not add edge");
+            if (color > max) max = color;
         }
-        return colors;
+        max++;
+        System.out.println("Colors used: " + max + "\nColoring: " + coloring.toString());
 
-        /*System.out.println(g.toString());
-        GreedyColoring<String, DefaultEdge> CSP = new GreedyColoring<>(g);
-        System.out.println(CSP.getColoring().toString());
-
-        try {
-            File myObj = new File("output.txt");
-            if (myObj.createNewFile()) {
-                System.out.println("File created: " + myObj.getName());
-            } else {
-                System.out.println("File already exists.");
-            }
-        } catch (IOException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
-        }
-        try {
-            FileWriter myWriter = new FileWriter("output.txt");
-            myWriter.write(CSP.getColoring().toString());
-            myWriter.close();
-            System.out.println("Successfully wrote to the file.");
-        } catch (IOException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
-        }*/
+        System.out.println("Verifying solution is valid: " + verifyGraph(g));
     }
+
+    // Ensures a vertex does not share the same color with any neighboring vertices
+    public static boolean verifyColor(Graph<V, DefaultEdge> g, V v)
+    {
+        List<V> neighbors = Graphs.neighborListOf(g, v);
+        for (V neighbor : neighbors)
+        {
+            if (v.color == neighbor.color) return false;
+        }
+        return true;
+    }
+
+    // Iterates through each vertex in the graph and ensures no nodes have the same neighbor
+    public static boolean verifyGraph(Graph<V, DefaultEdge> g)
+    {
+        V start = g.vertexSet().stream().filter(V -> V.getID().equals("0")).findAny().orElse(null);
+        Iterator<V> iterator = new DepthFirstIterator<>(g, start);
+        while (iterator.hasNext()) {
+            V v = iterator.next();
+            if (!verifyColor(g, v)) return false;
+        }
+        return true;
+    }
+
 }
