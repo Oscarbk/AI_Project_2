@@ -1,5 +1,5 @@
 # AI_Project_2
-##Search algorithm to sovle CSP Graph Coloring using heuristics and constraint propagation
+## Search algorithm to sovle CSP Graph Coloring using heuristics and constraint propagation
 
 ### How to run script:
 In the project folder, run “javac -cp lib\\* src/Search.java” to compile.
