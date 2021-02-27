@@ -51,7 +51,7 @@ class arc {
 }
 
 public class CSP {
-    int vertices = 7;
+    static int numAgenda = 0;
     public static void main(String[] args) throws IOException
     {
         Graph<V, DefaultEdge> g = new DefaultUndirectedGraph<>(DefaultEdge.class);
@@ -152,13 +152,8 @@ public class CSP {
             agenda.add(arcs.get(i));
         }
 
-        // Begin pruning graph based on arc rules
-        while (!agenda.isEmpty())
-        {
-
-        }
         System.out.println();
-        System.out.println("result: " + Util(g, set, colors, coloring, 0));
+        System.out.println("result: " + Util(g, set, colors, coloring, 0, arcs, agenda));
 
         int max = -1;
         for (Integer color : coloring.values())
@@ -178,6 +173,7 @@ public class CSP {
         }*/
         GreedyColoring<V, DefaultEdge> CSP = new GreedyColoring<>(g);
         System.out.println("What does greedy say: " + CSP.getColoring().toString());
+        System.out.println("Amount of times agenda was used: " + numAgenda);
         //System.out.println(colors);
 
         //System.out.println(Graphs.neighborListOf(g, "0"));
@@ -190,7 +186,7 @@ public class CSP {
     }
 
     // TODO: Verify sample sets can be solved with given coloring (See set 4)
-    public static boolean Util(Graph<V, DefaultEdge> g, ArrayList<V> set, int colors, HashMap<String, Integer> coloring, int i)
+    public static boolean Util(Graph<V, DefaultEdge> g, ArrayList<V> set, int colors, HashMap<String, Integer> coloring, int i, ArrayList<arc> arcs, Queue<arc> agenda)
     {
         /*if (i == set.size())
         {
@@ -227,15 +223,84 @@ public class CSP {
         currentVertex = set.remove(index);
 
         //System.out.println("Got vertex: " + currentVertex.getID());
+
+
+        // Try to assign that vertex a color
         for (int c = 0; c < colors; c++)
         {
             currentVertex.color = c;
             if (verifyColor(g, currentVertex))
             {
+
+                // We can assign color c to vertex v
+                // See if AC3 is satisfied
+                /*currentVertex.domain.clear();
+                currentVertex.domain.add(c);*/
+                if (!agenda.isEmpty()) numAgenda++;
+                while(!agenda.isEmpty())
+                {
+                    arc temp = agenda.remove();
+
+                    // Make sure there exists v1, v2, in V1, V2, such that v1 != v2
+                    V v1 = g.vertexSet().stream().filter(V -> V.getID().equals(temp.x)).findAny().orElse(null);
+                    V v2 = g.vertexSet().stream().filter(V -> V.getID().equals(temp.y)).findAny().orElse(null);
+
+
+
+                    // No solution exists in this branch if a domain is empty
+                    //if ((v1.domain.isEmpty()) || (v2.domain.isEmpty())) return false;
+
+                    if (v2.color == -1) continue;
+                    else
+                    {
+                        Boolean[] toRemove = new Boolean[colors];
+                        Boolean domainChanged = false;
+                        for (Integer it : v1.domain)
+                        {
+                            if (it == v2.color)
+                            {
+                                toRemove[it] = true;
+                            }
+                        }
+                        for (int j = 0; j < toRemove.length; j++)
+                        {
+                            if ((toRemove[j] != null))
+                            {
+                                v1.domain.remove(j);
+                                domainChanged = true;
+                            }
+                        }
+                        // Need to check constraints with v1 on the right hand side
+                        if (domainChanged)
+                        {
+                            for (arc it : arcs)
+                            {
+                                // Add arc back to agenda to check constraints again
+                                if (it.y.equals(v1.getID()))
+                                {
+                                    agenda.add(it);
+                                }
+                            }
+                        }
+                    }
+                    if ((v1.domain.isEmpty()) || (v2.domain.isEmpty()))
+                    {
+                        System.out.println("returning gfalse here");
+                        return false;
+                    }
+                }
+
+                // Reset agenda to check arc consistency on next iteration
+                for (int j = 0; j < arcs.size(); j++)
+                {
+                    agenda.add(arcs.get(i));
+                }
+
+
                 //System.out.println("Checking if vertex " + currentVertex.getID() + " can be assigned color " + c);
                 coloring.put(currentVertex.getID(), c);
                 updateMRV(g, currentVertex);
-                if (Util(g, set, colors, coloring, i + 1))
+                if (Util(g, set, colors, coloring, i + 1, arcs, agenda))
                 {
 
                     return true;
