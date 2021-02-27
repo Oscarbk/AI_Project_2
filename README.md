@@ -6,7 +6,7 @@ In the project folder, run “javac -cp lib\\* src/CSP.java” to compile.
 
 In the project folder, run “java -cp lib\\* src/CSP.java” to run.
 
-To change graph, edit the contents of "gc_basic.txt"
+To change graph, edit the contents of "gc.txt"
 
 ### Write-up:
 
