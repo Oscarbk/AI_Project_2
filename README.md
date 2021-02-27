@@ -2,9 +2,9 @@
 ## Search algorithm to sovle CSP Graph Coloring using heuristics and constraint propagation
 
 ### How to run script:
-In the project folder, run “javac -cp lib\\* src/Search.java” to compile.
+In the project folder, run “javac -cp lib\\* src/CSP.java” to compile.
 
-In the project folder, run “java -cp lib\\* src/Search.java” to run.
+In the project folder, run “java -cp lib\\* src/CSP.java” to run.
 
 To change graph, edit the contents of "gc_basic.txt"
 
